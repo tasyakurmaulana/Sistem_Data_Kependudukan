@@ -1,0 +1,229 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+struct datakependudukan
+{
+    char nomor[100];
+    char nama[100];
+    char alamat[200];
+    char jeniskelamin;
+};
+
+datakependudukan penduduk[100];
+int totaldatapenduduk = 0;
+bool found;
+
+void inputdata();
+void bacadata();
+void outputdata();
+void searchdata();
+void editdata();
+void hapusdata();
+
+
+int main() {
+    int menupil;
+    do{
+        cout <<"===DATA KEPENDUDUKAN KECAMATAN DEPOK===\n";
+        cout <<"=============Menu Pilihan=============\n";
+        cout <<"1. Input Data\n";
+        cout <<"2. Output Data\n";
+        cout <<"3. Search Data\n";
+        cout <<"4. Edit Data\n";
+        cout <<"5. Hapus Data\n";
+        cout <<"6. Exit\n";
+        cout <<"pilihan : ";
+            cin>>menupil;
+        switch (menupil)
+        {
+        case 1:
+            inputdata();
+            break;
+        case 2:
+            outputdata();
+            break;
+        case 3:
+            searchdata();
+            break;
+        case 4:
+            editdata();
+            break;
+        case 5:
+            hapusdata();
+            break;
+        case 6:
+            exit(0);
+            break;
+
+        
+        default:
+            cout<<"Pilihan tidak valid\n";
+            break;
+        }
+
+    }while(menupil !=6);
+    return 0;  
+}
+
+void inputdata(){
+    int jumlah;
+    cout<<"mau input berapa data?";
+    cin>>jumlah;
+    FILE *file = fopen("penduduk.dat", "ab");
+    if (!file) {
+        cout << "Gagal membuka file!" << endl;
+        return;
+    }
+    for(int i=0;i<jumlah;i++){
+        cout << "Masukkan nomor kependudukan: ";
+        cin >> penduduk[i].nomor;
+        cout << "Masukkan nama: ";
+        cin >> penduduk[i].nama;
+        cout << "Masukkan alamat: ";
+        cin >> penduduk[i].alamat;
+        cout << "Masukkan jenis kelamin(l/p): ";
+        cin >> penduduk[i].jeniskelamin;
+        fwrite(&penduduk[i], sizeof(datakependudukan), 1, file);
+        totaldatapenduduk++;
+    }
+    fclose(file);
+    cout << "Data berhasil ditambahkan!" << endl;
+}
+
+void bacadata(){
+    FILE *file = fopen("penduduk.dat", "rb");
+    if (!file) {
+        cout << "Belum ada data tersimpan." << endl;
+        return;
+    }
+    totaldatapenduduk = (fread(penduduk, sizeof(datakependudukan), 100, file)) ;
+    fclose(file);
+}
+
+void outputdata(){
+    bacadata();
+    for(int i=0;i<totaldatapenduduk-1;i++){
+        for(int j=0;j<totaldatapenduduk-1-i;j++){
+            if(strcmp(penduduk[j].nomor , penduduk[j+1].nomor) > 0) { 
+                swap(penduduk[j],penduduk[j+1]);
+            }
+        }
+    }
+    cout << "-------------------------------" << endl;
+    for (int i = 0; i < totaldatapenduduk; i++) {
+        cout << "Nomor kependudukan : " << penduduk[i].nomor << endl;
+        cout << "Nama               : " << penduduk[i].nama << endl;
+        cout << "Alamat             : " << penduduk[i].alamat << endl;
+        cout << "Jenis Kelamin      : " << penduduk[i].jeniskelamin << endl;
+        cout << "-------------------------------" << endl;
+    }
+}
+
+void searchdata (){
+    bacadata();
+    char carinodata[100];
+    found = false;
+    int l=0;
+    cout <<"masukkan nomor kependudukan :";
+        cin>>carinodata;
+    while (l<totaldatapenduduk && found==false){
+        if (strcmp(penduduk[l].nomor, carinodata) == 0){
+            {found = true;}}
+        else {l++;}} 
+        if (found){
+            cout<< "Data ditemukan sebagai berikut:\n";
+            cout << "Nomor kependudukan : " << penduduk[l].nomor << endl;
+            cout << "Nama               : " << penduduk[l].nama << endl;
+            cout << "Alamat             : " << penduduk[l].alamat << endl;
+            cout << "Jenis Kelamin      : " << penduduk[l].jeniskelamin << endl;;}
+        else{
+            cout <<"data penduduk dengan nomor kependudukan " << carinodata << " tidak ditemukan\n";
+        }
+}
+
+void editdata() {
+    bacadata();
+    char carinoedit[100];
+    found = false;
+    
+    cout << "Masukkan nomor kependudukan yang ingin diedit: ";
+    cin >> carinoedit;
+    for (int i = 0; i < totaldatapenduduk; i++) {
+        if (strcmp(penduduk[i].nomor, carinoedit) == 0) {
+            found = true;
+            cout << "\nData ditemukan:\n";
+            cout << "Nomor kependudukan : " << penduduk[i].nomor << endl;
+            cout << "Nama               : " << penduduk[i].nama << endl;
+            cout << "Alamat             : " << penduduk[i].alamat << endl;
+            cout << "Jenis Kelamin      : " << penduduk[i].jeniskelamin << endl;
+
+            cout << "\nMasukkan alamat baru: ";
+                cin>>penduduk[i].alamat;
+
+            FILE *file = fopen("penduduk.dat", "wb");
+            if (!file) {
+                cout << "Gagal membuka file!" << endl;
+                return;
+            }
+            fwrite(penduduk, sizeof(datakependudukan), totaldatapenduduk, file);
+            fclose(file);
+
+            cout << "Alamat berhasil diperbarui!\n";
+            return;
+        }
+    }
+
+    if (!found) {
+        cout << "Data dengan nomor kependudukan " << carinoedit << " tidak ditemukan.\n";
+    }
+}
+
+void hapusdata() {
+    bacadata(); 
+
+    char carino[100];
+    found = false;
+    int hapus = -1;
+
+    cout << "Masukkan nomor kependudukan yang ingin dihapus: ";
+    cin >> carino;
+    for (int i = 0; i < totaldatapenduduk; i++) {
+        if (strcmp(penduduk[i].nomor, carino) == 0) {
+            found = true;
+            hapus = i;
+            cout << "\nData ditemukan:\n";
+            cout << "Nomor kependudukan : " << penduduk[i].nomor << endl;
+            cout << "Nama               : " << penduduk[i].nama << endl;
+            cout << "Alamat             : " << penduduk[i].alamat << endl;
+            cout << "Jenis Kelamin      : " << penduduk[i].jeniskelamin << endl;
+
+            char konfirmasi;
+            cout << "\nApakah Anda yakin ingin menghapus data ini? (y/n): ";
+            cin >> konfirmasi;
+            if (konfirmasi == 'y' || konfirmasi == 'Y') {
+                for (int j = hapus; j < totaldatapenduduk - 1; j++) {
+                    penduduk[j] = penduduk[j + 1];
+                }
+                totaldatapenduduk--;
+
+                FILE *file = fopen("penduduk.dat", "wb");
+                if (!file) {
+                    cout << "Gagal membuka file!" << endl;
+                    return;
+                }
+                fwrite(penduduk, sizeof(datakependudukan), totaldatapenduduk, file);
+                fclose(file);
+
+                cout << "Data berhasil dihapus!\n";
+            } else {
+                cout << "Penghapusan dibatalkan.\n";
+            }
+            return;
+        }
+    }
+
+    if (!found) {
+        cout << "Data dengan nomor kependudukan " << carino << " tidak ditemukan.\n";
+    }
+}
